@@ -1,66 +1,112 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import { PlayIcon } from '@heroicons/react/24/solid'
+import { useState, useCallback, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { PlayIcon, PauseIcon } from '@heroicons/react/24/solid'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import useEmblaCarousel from 'embla-carousel-react'
 
 const featuredProjects = [
   {
     id: 1,
-    title: "Brand Commercial",
-    description: "High-energy commercial for tech startup",
-    categories: ["Commercial", "TechVision"],
-    skills: ["editing", "color grading", "motion graphics"],
-    thumbnail: "/project1.jpg",
+    title: "Cinematic Nature Documentary",
+    description: "An immersive journey through breathtaking landscapes and natural wonders, captured in stunning 4K resolution.",
+    categories: ["Documentary", "Nature", "4K"],
+    skills: ["editing", "color grading", "cinematography"],
+    videoUrl: "/videos/8100336-uhd_4096_2160_25fps.mp4",
   },
   {
     id: 2,
-    title: "Music Video Production",
-    description: "Dynamic music video for indie artist",
-    categories: ["Music", "Creative"],
-    skills: ["editing", "visual effects", "color grading"],
-    thumbnail: "/project2.jpg",
+    title: "Urban Life Timelapse",
+    description: "A dynamic exploration of city life through mesmerizing timelapse sequences.",
+    categories: ["Timelapse", "Urban", "4K"],
+    skills: ["timelapse", "editing", "color grading"],
+    videoUrl: "/videos/8100337-uhd_4096_2160_25fps.mp4",
   },
   {
     id: 3,
-    title: "Documentary Film",
-    description: "Award-winning documentary short film",
-    categories: ["Documentary", "Film"],
-    skills: ["storytelling", "editing", "sound design"],
-    thumbnail: "/project3.jpg",
+    title: "Product Showcase",
+    description: "Elegant and sophisticated product demonstration video highlighting design and functionality.",
+    categories: ["Commercial", "Product"],
+    skills: ["product videography", "lighting", "editing"],
+    videoUrl: "/videos/1536315-hd_1920_1080_30fps.mp4",
   },
 ]
 
 export default function FeaturedProject() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [playingVideo, setPlayingVideo] = useState<number | null>(null)
+  const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({})
+
+  const setVideoRef = (projectId: number) => (el: HTMLVideoElement | null) => {
+    videoRefs.current[projectId] = el
+  }
+
+  const handlePlayVideo = (projectId: number) => {
+    const videoElement = videoRefs.current[projectId]
+    if (!videoElement) return
+
+    if (playingVideo === projectId) {
+      videoElement.pause()
+      videoElement.currentTime = 0
+      setPlayingVideo(null)
+    } else {
+      // Pause any currently playing video
+      if (playingVideo !== null && videoRefs.current[playingVideo]) {
+        videoRefs.current[playingVideo]!.pause()
+        videoRefs.current[playingVideo]!.currentTime = 0
+      }
+      
+      // Play the new video
+      videoElement.play()
+        .then(() => {
+          setPlayingVideo(projectId)
+        })
+        .catch((error) => {
+          console.error('Error playing video:', error)
+        })
+    }
+  }
 
   const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev()
-  }, [emblaApi])
+    if (emblaApi) {
+      // Pause current video when changing slides
+      if (playingVideo !== null && videoRefs.current[playingVideo]) {
+        videoRefs.current[playingVideo]!.pause()
+        videoRefs.current[playingVideo]!.currentTime = 0
+        setPlayingVideo(null)
+      }
+      emblaApi.scrollPrev()
+    }
+  }, [emblaApi, playingVideo])
 
   const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext()
-  }, [emblaApi])
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return
-    setSelectedIndex(emblaApi.selectedScrollSnap())
-  }, [emblaApi])
+    if (emblaApi) {
+      // Pause current video when changing slides
+      if (playingVideo !== null && videoRefs.current[playingVideo]) {
+        videoRefs.current[playingVideo]!.pause()
+        videoRefs.current[playingVideo]!.currentTime = 0
+        setPlayingVideo(null)
+      }
+      emblaApi.scrollNext()
+    }
+  }, [emblaApi, playingVideo])
 
   return (
-    <div className="py-20 bg-primary-light dark:bg-primary">
+    <section className="py-20">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-accent mb-4">Featured Project</h2>
-          <p className="text-gray-dark dark:text-gray-light text-lg">Explore my latest masterpiece</p>
+          <h2 className="text-4xl md:text-5xl font-bold text-primary dark:text-white mb-4">
+            Featured Project
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Explore my latest masterpiece
+          </p>
         </motion.div>
 
         <div className="relative">
@@ -74,7 +120,15 @@ export default function FeaturedProject() {
                     transition={{ duration: 0.8 }}
                     className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer"
                   >
-                    {/* Placeholder/Thumbnail */}
+                    <video
+                      ref={setVideoRef(project.id)}
+                      data-project-id={project.id}
+                      src={project.videoUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                      loop
+                    />
                     <div className="absolute inset-0 bg-gradient-to-b from-gray-light/20 to-gray-light dark:from-gray-dark/20 dark:to-gray-dark">
                       <div className="absolute inset-0 bg-gradient-radial from-accent/10 via-primary-light dark:via-primary to-primary-light dark:to-primary opacity-50" />
                     </div>
@@ -109,16 +163,28 @@ export default function FeaturedProject() {
                       </motion.button>
                     </div>
 
-                    {/* Play Button - Center */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <motion.div
+                    {/* Play/Pause Button - Center */}
+                    <AnimatePresence>
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="bg-accent rounded-full p-6"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handlePlayVideo(project.id)
+                        }}
+                        className="absolute inset-0 flex items-center justify-center z-20"
                       >
-                        <PlayIcon className="h-12 w-12 text-white" />
-                      </motion.div>
-                    </div>
+                        <div className="bg-accent/80 p-4 rounded-full hover:bg-accent transition-colors">
+                          {playingVideo === project.id ? (
+                            <PauseIcon className="h-8 w-8 text-white" />
+                          ) : (
+                            <PlayIcon className="h-8 w-8 text-white" />
+                          )}
+                        </div>
+                      </motion.button>
+                    </AnimatePresence>
                   </motion.div>
                 </div>
               ))}
@@ -128,31 +194,21 @@ export default function FeaturedProject() {
           {/* Navigation Buttons */}
           <button
             onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-accent/90 hover:bg-accent p-3 rounded-full text-white z-10 transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-accent/80 hover:bg-accent text-white p-2 rounded-full transition-colors z-30"
+            aria-label="Previous project"
           >
             <ChevronLeftIcon className="h-6 w-6" />
           </button>
+
           <button
             onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-accent/90 hover:bg-accent p-3 rounded-full text-white z-10 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-accent/80 hover:bg-accent text-white p-2 rounded-full transition-colors z-30"
+            aria-label="Next project"
           >
             <ChevronRightIcon className="h-6 w-6" />
           </button>
-
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mt-6">
-            {featuredProjects.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === selectedIndex ? 'bg-accent' : 'bg-gray-dark/30 dark:bg-gray-light/30'
-                }`}
-                onClick={() => emblaApi?.scrollTo(index)}
-              />
-            ))}
-          </div>
         </div>
       </div>
-    </div>
+    </section>
   )
 } 

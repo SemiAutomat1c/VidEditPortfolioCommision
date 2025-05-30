@@ -1,0 +1,10 @@
+Please add your profile photo here with the filename "profile.jpg"
+
+Requirements:
+1. Name the file exactly as "profile.jpg"
+2. Recommended size: At least 800x1200 pixels (3:4 aspect ratio)
+3. Make sure it's a professional photo with good lighting
+4. The photo should be in JPG/JPEG format
+5. Place it in the public directory (same location as this text file)
+
+The image will be displayed in the About section with a subtle purple overlay and decorative blur effects. 

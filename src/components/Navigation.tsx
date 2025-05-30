@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
@@ -8,6 +8,7 @@ import ThemeToggle from './ThemeToggle'
 
 const navigation = [
   { name: 'Home', href: '/' },
+  { name: 'About', href: '#about' },
   { name: 'Portfolio', href: '#portfolio' },
   { name: 'Services', href: '#services' },
   { name: 'Contact', href: '#contact' },
@@ -15,6 +16,15 @@ const navigation = [
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null // Return null on server-side
+  }
 
   return (
     <header className="fixed w-full z-50 bg-primary-light/80 dark:bg-primary/80 backdrop-blur-sm border-b border-gray-dark-light/10 dark:border-gray-dark/10">

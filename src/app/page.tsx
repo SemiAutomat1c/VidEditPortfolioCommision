@@ -10,6 +10,7 @@ import Projects from '@/components/ProjectGrid'
 import FeaturedProject from '@/components/FeaturedProject'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import { ArrowDownIcon } from '@heroicons/react/24/outline'
+import About from '@/components/About'
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false)
@@ -147,6 +148,9 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
+
+        {/* About Section */}
+        <About />
 
         {/* Portfolio Section */}
         <section id="portfolio">

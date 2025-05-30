@@ -3,50 +3,44 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PlayIcon } from '@heroicons/react/24/solid'
+import Link from 'next/link'
 
 const projects = [
   {
     id: 1,
-    title: "Star Atlas Game Trailer",
-    category: "Game Trailer",
-    thumbnail: "/project1.jpg",
-    videoUrl: "#",
+    title: "Cinematic Nature Documentary",
+    category: "Documentary",
+    description: "An immersive journey through breathtaking landscapes.",
+    videoUrl: "/videos/8100336-uhd_4096_2160_25fps.mp4",
   },
   {
     id: 2,
-    title: "The Little Mermaid",
-    category: "Film",
-    thumbnail: "/project2.jpg",
-    videoUrl: "#",
+    title: "Urban Life Timelapse",
+    category: "Timelapse",
+    description: "Dynamic city life through mesmerizing sequences.",
+    videoUrl: "/videos/8100337-uhd_4096_2160_25fps.mp4",
   },
   {
     id: 3,
-    title: "Digital Art Collection",
-    category: "Animation",
-    thumbnail: "/project3.jpg",
-    videoUrl: "#",
+    title: "Product Showcase",
+    category: "Commercial",
+    description: "Elegant product demonstration video.",
+    videoUrl: "/videos/1536315-hd_1920_1080_30fps.mp4",
   },
   {
     id: 4,
-    title: "Meta Quest Prisms",
-    category: "VR Experience",
-    thumbnail: "/project4.jpg",
-    videoUrl: "#",
+    title: "Corporate Overview",
+    category: "Corporate",
+    description: "Professional corporate presentation video.",
+    videoUrl: "/videos/1536322-hd_1920_1080_30fps.mp4",
   },
   {
     id: 5,
-    title: "Lion King 360°",
-    category: "360° Video",
-    thumbnail: "/project5.jpg",
-    videoUrl: "#",
-  },
-  {
-    id: 6,
-    title: "Xenosphere",
-    category: "Game Trailer",
-    thumbnail: "/project6.jpg",
-    videoUrl: "#",
-  },
+    title: "Event Highlights",
+    category: "Event",
+    description: "Dynamic coverage of major events.",
+    videoUrl: "/videos/4285872-hd_1920_1080_30fps.mp4",
+  }
 ]
 
 export default function Projects() {
@@ -75,28 +69,35 @@ export default function Projects() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Placeholder for thumbnail */}
-              <div className="absolute inset-0 bg-gray-light dark:bg-gray-dark rounded-lg overflow-hidden">
-                <motion.div
-                  className="w-full h-full bg-gradient-to-b from-gray-light/20 to-gray-light dark:from-gray-dark/20 dark:to-gray-dark"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.3 }}
-                />
-              </div>
-
-              {/* Project Info */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                <h3 className="text-xl font-semibold text-primary dark:text-white mb-2">{project.title}</h3>
-                <p className="text-gray-dark dark:text-gray-light text-sm mb-3">{project.category}</p>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-fit px-4 py-2 bg-accent hover:bg-accent-light text-white rounded-lg flex items-center gap-2 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <PlayIcon className="h-4 w-4" />
-                  <span>Watch</span>
-                </motion.button>
-              </div>
+              <Link href={`/projects/${project.id}`}>
+                <div className="relative w-full h-full rounded-lg overflow-hidden">
+                  <video
+                    src={project.videoUrl}
+                    className="w-full h-full object-cover"
+                    muted
+                    playsInline
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.pause()
+                      e.currentTarget.currentTime = 0
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="text-xl font-semibold text-white mb-2">{project.title}</h3>
+                      <p className="text-gray-200 text-sm mb-3">{project.category}</p>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="w-fit px-4 py-2 bg-accent hover:bg-accent-light text-white rounded-lg flex items-center gap-2 transition-colors"
+                      >
+                        <PlayIcon className="h-4 w-4" />
+                        <span>Watch</span>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
             </motion.div>
           ))}
         </div>

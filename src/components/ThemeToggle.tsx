@@ -3,9 +3,19 @@
 import { motion } from 'framer-motion'
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline'
 import { useTheme } from '@/context/ThemeContext'
+import { useState, useEffect } from 'react'
 
 export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return <div className="w-9 h-9" /> // Placeholder with same dimensions
+  }
 
   return (
     <motion.button
