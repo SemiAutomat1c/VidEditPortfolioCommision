@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { PlayIcon, PauseIcon } from '@heroicons/react/24/solid'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import useEmblaCarousel from 'embla-carousel-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const featuredProjects = [
   {
@@ -37,6 +39,7 @@ export default function FeaturedProject() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
   const [playingVideo, setPlayingVideo] = useState<number | null>(null)
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({})
+  const router = useRouter()
 
   const setVideoRef = (projectId: number) => (el: HTMLVideoElement | null) => {
     videoRefs.current[projectId] = el
@@ -118,23 +121,50 @@ export default function FeaturedProject() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer"
+                    className="relative aspect-video rounded-2xl overflow-hidden"
                   >
-                    <video
-                      ref={setVideoRef(project.id)}
-                      data-project-id={project.id}
-                      src={project.videoUrl}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                      loop
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-gray-light/20 to-gray-light dark:from-gray-dark/20 dark:to-gray-dark">
+                    {/* Video Container */}
+                    <div className="relative w-full h-full">
+                      <video
+                        ref={setVideoRef(project.id)}
+                        data-project-id={project.id}
+                        src={project.videoUrl}
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        loop
+                      />
+                      
+                      {/* Video Controls - Center */}
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center z-20"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handlePlayVideo(project.id)
+                        }}
+                      >
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          whileHover={{ scale: 1.1 }}
+                          className="bg-accent/80 p-4 rounded-full hover:bg-accent transition-colors"
+                        >
+                          {playingVideo === project.id ? (
+                            <PauseIcon className="h-8 w-8 text-white" />
+                          ) : (
+                            <PlayIcon className="h-8 w-8 text-white" />
+                          )}
+                        </motion.div>
+                      </div>
+                    </div>
+
+                    {/* Overlay and Project Info */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-gray-light/20 to-gray-light dark:from-gray-dark/20 dark:to-gray-dark pointer-events-none">
                       <div className="absolute inset-0 bg-gradient-radial from-accent/10 via-primary-light dark:via-primary to-primary-light dark:to-primary opacity-50" />
                     </div>
 
-                    {/* Project Info - Bottom Left */}
-                    <div className="absolute bottom-0 left-0 p-8 z-10">
+                    {/* Project Info Container - Bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 p-8 z-30">
                       <div className="flex gap-2 mb-4">
                         {project.categories.map((category) => (
                           <span
@@ -154,37 +184,21 @@ export default function FeaturedProject() {
                           </span>
                         ))}
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="mt-6 px-6 py-3 bg-accent hover:bg-accent-light text-white rounded-lg flex items-center gap-2 transition-colors"
-                      >
-                        <span>Watch Full Video</span>
-                      </motion.button>
+                      <div className="relative z-40">
+                        <Link 
+                          href={`/projects/${project.id}`}
+                          className="inline-block mt-6"
+                        >
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="px-6 py-3 bg-accent hover:bg-accent-light text-white rounded-lg flex items-center gap-2 transition-colors"
+                          >
+                            <span>Watch Full Video</span>
+                          </motion.div>
+                        </Link>
+                      </div>
                     </div>
-
-                    {/* Play/Pause Button - Center */}
-                    <AnimatePresence>
-                      <motion.button
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        whileHover={{ scale: 1.1 }}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handlePlayVideo(project.id)
-                        }}
-                        className="absolute inset-0 flex items-center justify-center z-20"
-                      >
-                        <div className="bg-accent/80 p-4 rounded-full hover:bg-accent transition-colors">
-                          {playingVideo === project.id ? (
-                            <PauseIcon className="h-8 w-8 text-white" />
-                          ) : (
-                            <PlayIcon className="h-8 w-8 text-white" />
-                          )}
-                        </div>
-                      </motion.button>
-                    </AnimatePresence>
                   </motion.div>
                 </div>
               ))}
@@ -194,7 +208,7 @@ export default function FeaturedProject() {
           {/* Navigation Buttons */}
           <button
             onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-accent/80 hover:bg-accent text-white p-2 rounded-full transition-colors z-30"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-accent/80 hover:bg-accent text-white p-2 rounded-full transition-colors z-50"
             aria-label="Previous project"
           >
             <ChevronLeftIcon className="h-6 w-6" />
@@ -202,7 +216,7 @@ export default function FeaturedProject() {
 
           <button
             onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-accent/80 hover:bg-accent text-white p-2 rounded-full transition-colors z-30"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-accent/80 hover:bg-accent text-white p-2 rounded-full transition-colors z-50"
             aria-label="Next project"
           >
             <ChevronRightIcon className="h-6 w-6" />

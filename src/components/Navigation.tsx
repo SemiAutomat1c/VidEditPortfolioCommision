@@ -32,7 +32,7 @@ export default function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <Link href="/" className="text-2xl font-bold text-primary dark:text-white">
-              VideoEditor
+              Jayrome Pillo
             </Link>
           </div>
 
