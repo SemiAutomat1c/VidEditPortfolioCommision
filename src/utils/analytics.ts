@@ -27,13 +27,11 @@ export const event = ({ action, category, label, value }: {
   })
 }
 
-// Log video interactions
-export const logVideoInteraction = (action: 'play' | 'pause' | 'complete', videoTitle: string) => {
-  event({
-    action: `video_${action}`,
-    category: 'Video',
-    label: videoTitle,
-  })
+type VideoInteractionType = 'play' | 'pause' | 'complete'
+
+export const logVideoInteraction = (type: VideoInteractionType, title: string) => {
+  // For now, just log to console. In production, this would send data to an analytics service
+  console.log(`Video interaction: ${type} - ${title}`)
 }
 
 // Log project filter usage

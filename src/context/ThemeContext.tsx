@@ -20,8 +20,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const savedTheme = localStorage.getItem('theme') as Theme
     if (savedTheme) {
       setTheme(savedTheme)
+      document.documentElement.classList.remove('light', 'dark')
+      document.documentElement.classList.add(savedTheme)
     } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
       setTheme('light')
+      document.documentElement.classList.remove('light', 'dark')
+      document.documentElement.classList.add('light')
+    } else {
+      setTheme('dark')
+      document.documentElement.classList.remove('light', 'dark')
+      document.documentElement.classList.add('dark')
     }
   }, [])
 
