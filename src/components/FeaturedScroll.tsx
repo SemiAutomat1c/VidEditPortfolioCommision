@@ -209,60 +209,73 @@ export default function FeaturedScroll() {
                     key={project.id}
                     className="h-full w-full snap-start snap-always relative aspect-[9/16]"
                   >
-                    {/* Loading State */}
-                    {!isLoaded[project.id] && !videoErrors[project.id] && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-12 h-12 border-4 border-gray-300/30 border-t-gray-800 dark:border-white/30 dark:border-t-white rounded-full animate-spin" />
-                      </div>
-                    )}
-
-                    {/* Error State */}
-                    {videoErrors[project.id] && (
+                    {/* Video Container with Thumbnail */}
+                    <div className="relative h-full w-full">
+                      {/* Thumbnail/Loading State */}
                       <div 
-                        className="h-full w-full bg-cover bg-center flex items-center justify-center"
+                        className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-300 ${
+                          isLoaded[project.id] && !videoErrors[project.id] ? 'opacity-0' : 'opacity-100'
+                        }`}
                         style={{ background: project.gradient }}
                       >
-                        <div className="text-center">
-                          <p className="text-white text-lg mb-4">Failed to load video</p>
-                          <button
-                            onClick={() => handleRetry(project.id)}
-                            className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors"
-                          >
-                            Retry
-                          </button>
-                        </div>
+                        {!isLoaded[project.id] && !videoErrors[project.id] && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-12 h-12 border-4 border-gray-300/30 border-t-gray-800 dark:border-white/30 dark:border-t-white rounded-full animate-spin" />
+                          </div>
+                        )}
                       </div>
-                    )}
 
-                    {/* Video */}
-                    <video
-                      ref={el => setVideoRef(el, project.id)}
-                      data-index={index}
-                      data-videoid={project.id}
-                      src={project.videoUrl}
-                      className={`h-full w-full object-cover transition-opacity duration-300 ${
-                        isLoaded[project.id] && !videoErrors[project.id] ? 'opacity-100' : 'opacity-0'
-                      }`}
-                      playsInline
-                      loop
-                      muted
-                      preload="auto"
-                      onError={(e) => {
-                        const target = e.target as HTMLVideoElement
-                        console.error('Video load error:', {
-                          id: project.id,
-                          src: target.src,
-                          error: target.error
-                        })
-                        setVideoErrors(prev => ({ ...prev, [project.id]: true }))
-                        setIsLoaded(prev => ({ ...prev, [project.id]: false }))
-                      }}
-                      onLoadedData={() => {
-                        console.log('Video loaded:', project.id)
-                        setIsLoaded(prev => ({ ...prev, [project.id]: true }))
-                        setVideoErrors(prev => ({ ...prev, [project.id]: false }))
-                      }}
-                    />
+                      {/* Video */}
+                      <video
+                        ref={el => setVideoRef(el, project.id)}
+                        data-index={index}
+                        data-videoid={project.id}
+                        src={project.videoUrl}
+                        className={`h-full w-full object-cover transition-opacity duration-300 ${
+                          isLoaded[project.id] && !videoErrors[project.id] ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        playsInline
+                        loop
+                        muted
+                        poster={project.thumbnailUrl}
+                        preload="auto"
+                        onLoadedMetadata={(e) => {
+                          const video = e.target as HTMLVideoElement;
+                          // Set the current time to 0 to show the first frame
+                          video.currentTime = 0;
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLVideoElement
+                          console.error('Video load error:', {
+                            id: project.id,
+                            src: target.src,
+                            error: target.error
+                          })
+                          setVideoErrors(prev => ({ ...prev, [project.id]: true }))
+                          setIsLoaded(prev => ({ ...prev, [project.id]: false }))
+                        }}
+                        onLoadedData={() => {
+                          console.log('Video loaded:', project.id)
+                          setIsLoaded(prev => ({ ...prev, [project.id]: true }))
+                          setVideoErrors(prev => ({ ...prev, [project.id]: false }))
+                        }}
+                      />
+
+                      {/* Error State */}
+                      {videoErrors[project.id] && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                          <div className="text-center">
+                            <p className="text-white text-lg mb-4">Failed to load video</p>
+                            <button
+                              onClick={() => handleRetry(project.id)}
+                              className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors"
+                            >
+                              Retry
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Video Info */}
                     <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/50 to-transparent">
