@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navigation from '@/components/Navigation'
-import { ThemeProvider } from '@/context/ThemeContext'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import BackToTop from '@/components/BackToTop'
 import defaultMetadata from './metadata'
 import { Analytics } from '@vercel/analytics/react'
 import { GA_TRACKING_ID } from '@/utils/analytics'
+import { ThemeProvider } from './providers'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 

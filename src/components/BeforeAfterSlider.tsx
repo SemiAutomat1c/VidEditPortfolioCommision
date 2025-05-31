@@ -1,39 +1,30 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { comparisonProjects } from '@/data/projects'
+// import { comparisonProjects } from '@/data/projects'
 
 export default function BeforeAfterSlider() {
+  // Since we don't have comparison projects yet, we'll return null
+  return null
+
+  // Keep the code commented for future use
+  /*
   const [sliderPosition, setSliderPosition] = useState(50)
   const [activeProject, setActiveProject] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
-  const isDragging = useRef(false)
-
-  const handleMouseDown = () => {
-    isDragging.current = true
-  }
-
-  const handleMouseUp = () => {
-    isDragging.current = false
-  }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || !containerRef.current) return
+    const container = containerRef.current
+    if (!container) return
 
-    const rect = containerRef.current.getBoundingClientRect()
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width))
-    const percentage = (x / rect.width) * 100
-    setSliderPosition(percentage)
+    const rect = container.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    setSliderPosition(Math.min(Math.max(x, 0), 100))
   }
 
-  useEffect(() => {
-    window.addEventListener('mouseup', handleMouseUp)
-    return () => window.removeEventListener('mouseup', handleMouseUp)
-  }, [])
-
   return (
-    <section className="py-20 bg-primary-light dark:bg-primary">
+    <section className="py-20 bg-secondary-light dark:bg-secondary overflow-hidden">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -42,32 +33,14 @@ export default function BeforeAfterSlider() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-primary dark:text-white mb-6">
-            The Transformation
+            Before & After
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Drag the slider to see the before and after of our editing process
+            See the transformation from raw footage to polished content
           </p>
         </motion.div>
 
         <div className="max-w-4xl mx-auto">
-          {/* Project Selection */}
-          <div className="flex gap-4 mb-8 overflow-x-auto pb-4">
-            {comparisonProjects.map((project, index) => (
-              <button
-                key={project.title}
-                onClick={() => setActiveProject(index)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-                  index === activeProject
-                    ? 'bg-accent text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                {project.category}
-              </button>
-            ))}
-          </div>
-
-          {/* Comparison Viewer */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -76,7 +49,7 @@ export default function BeforeAfterSlider() {
             ref={containerRef}
             onMouseMove={handleMouseMove}
           >
-            {/* Before Video */}
+            {/* Before Video *//*}
             <div className="absolute inset-0">
               <video
                 src={comparisonProjects[activeProject].beforeVideo}
@@ -88,7 +61,7 @@ export default function BeforeAfterSlider() {
               />
             </div>
 
-            {/* After Video */}
+            {/* After Video *//*}
             <div
               className="absolute inset-0 overflow-hidden"
               style={{ width: `${sliderPosition}%` }}
@@ -104,36 +77,15 @@ export default function BeforeAfterSlider() {
               />
             </div>
 
-            {/* Slider */}
+            {/* Slider *//*}
             <div
-              className="absolute top-0 bottom-0"
+              className="absolute inset-y-0"
               style={{ left: `${sliderPosition}%` }}
-              onMouseDown={handleMouseDown}
             >
-              <div className="absolute inset-y-0 -left-px w-0.5 bg-white shadow-lg" />
-              <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg cursor-ew-resize flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-gray-800"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                  />
-                </svg>
+              <div className="absolute inset-y-0 -left-px w-0.5 bg-white" />
+              <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center cursor-grab">
+                <div className="w-1 h-4 bg-gray-800 rounded-full" />
               </div>
-            </div>
-
-            {/* Labels */}
-            <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-              Before
-            </div>
-            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-              After
             </div>
           </motion.div>
 
@@ -159,4 +111,5 @@ export default function BeforeAfterSlider() {
       </div>
     </section>
   )
+  */
 } 

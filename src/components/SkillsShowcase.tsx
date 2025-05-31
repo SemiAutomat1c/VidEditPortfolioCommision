@@ -17,42 +17,42 @@ const skills = [
     icon: VideoCameraIcon,
     description: 'Quick cuts, dynamic transitions, and perfect timing that keeps viewers engaged.',
     stats: ['0.5-3s', 'Clip Duration', '100+', 'Transitions'],
-    color: 'from-pink-500 to-rose-500'
+    color: 'from-accent-pink to-accent-purple'
   },
   {
     name: 'Sound Design',
     icon: MusicalNoteIcon,
     description: 'Beat-matched cuts, trending sounds, and custom audio effects.',
     stats: ['Perfect', 'Beat Sync', '1000+', 'Sound Effects'],
-    color: 'from-purple-500 to-indigo-500'
+    color: 'from-accent-purple to-accent-blue'
   },
   {
     name: 'Motion Graphics',
     icon: CursorArrowRaysIcon,
     description: 'Eye-catching text animations and dynamic overlays.',
     stats: ['Custom', 'Animations', '50+', 'Templates'],
-    color: 'from-blue-500 to-cyan-500'
+    color: 'from-accent-blue to-accent-cyan'
   },
   {
     name: 'Visual Effects',
     icon: SparklesIcon,
     description: 'Creative transitions and effects that make content pop.',
     stats: ['Unique', 'Style', '200+', 'Effects'],
-    color: 'from-teal-500 to-green-500'
+    color: 'from-accent-cyan to-accent-blue'
   },
   {
     name: 'Trend Mastery',
     icon: HashtagIcon,
     description: 'Up-to-date with latest editing trends and viral styles.',
     stats: ['Daily', 'Research', '10+', 'Niches'],
-    color: 'from-amber-500 to-orange-500'
+    color: 'from-accent-blue to-accent-purple'
   },
   {
     name: 'Analytics',
     icon: ChartBarIcon,
     description: 'Data-driven approach to optimize content performance.',
     stats: ['50M+', 'Views', '15+', 'Viral Hits'],
-    color: 'from-red-500 to-pink-500'
+    color: 'from-accent-purple to-accent-pink'
   }
 ]
 

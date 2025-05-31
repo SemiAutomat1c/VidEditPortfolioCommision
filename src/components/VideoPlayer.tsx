@@ -27,10 +27,12 @@ export default function VideoPlayer({
   const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(startMuted)
+  const [volume, setVolume] = useState(1)
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadingRef = useRef<boolean>(false)
 
@@ -94,27 +96,43 @@ export default function VideoPlayer({
         video.playsInline = true
         video.preload = priority ? "auto" : "metadata"
         video.muted = startMuted
+        setIsMuted(startMuted)
 
+        // Load video first
+        await new Promise((resolve, reject) => {
+          video.onloadeddata = resolve
+          video.onerror = reject
+          video.load()
+        })
+
+        setIsLoaded(true)
+        
         if (priority || document.visibilityState === 'visible') {
           try {
             await video.play()
+            setIsPlaying(true)
           } catch (err) {
-            video.muted = true
-            setIsMuted(true)
-            await video.play()
+            // If autoplay fails, try with muted
+            if (!video.muted) {
+              video.muted = true
+              setIsMuted(true)
+              await video.play()
+              setIsPlaying(true)
+            } else {
+              throw err
+            }
           }
-          setIsPlaying(true)
         }
       } catch (err) {
-        console.error('Error auto-playing video:', err)
-        setError('Failed to play video')
+        console.error('Error loading/playing video:', err)
+        setError('Failed to load video')
+        setIsLoaded(false)
       } finally {
         loadingRef.current = false
       }
     }
 
     if (src) {
-      video.load()
       playVideo()
     }
 
@@ -176,6 +194,17 @@ export default function VideoPlayer({
 
     video.muted = !video.muted
     setIsMuted(video.muted)
+  }
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation()
+    const video = videoRef.current
+    if (!video) return
+
+    const newVolume = parseFloat(e.target.value)
+    video.volume = newVolume
+    setVolume(newVolume)
+    setIsMuted(newVolume === 0)
   }
 
   const handleFullscreen = async (e: React.MouseEvent) => {
@@ -278,16 +307,40 @@ export default function VideoPlayer({
         <div className="absolute bottom-4 right-4 flex gap-2">
           {/* Sound Control */}
           {showSoundControl && (
-            <button
-              onClick={toggleMute}
-              className="p-2 bg-black/40 rounded-full hover:bg-black/60 transition-colors"
+            <div 
+              className="relative group"
+              onMouseEnter={() => setShowVolumeSlider(true)}
+              onMouseLeave={() => setShowVolumeSlider(false)}
             >
-              {isMuted ? (
-                <SpeakerXMarkIcon className="w-6 h-6 text-white" />
-              ) : (
-                <SpeakerWaveIcon className="w-6 h-6 text-white" />
-              )}
-            </button>
+              <button
+                onClick={toggleMute}
+                className="p-2 bg-black/40 rounded-full hover:bg-black/60 transition-colors"
+              >
+                {isMuted ? (
+                  <SpeakerXMarkIcon className="w-6 h-6 text-white" />
+                ) : (
+                  <SpeakerWaveIcon className="w-6 h-6 text-white" />
+                )}
+              </button>
+              
+              {/* Volume Slider */}
+              <div 
+                className={`absolute bottom-full mb-2 -left-12 bg-black/40 backdrop-blur-sm p-2 rounded-lg transition-opacity duration-200 ${
+                  showVolumeSlider ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
           )}
 
           {/* Fullscreen Control */}

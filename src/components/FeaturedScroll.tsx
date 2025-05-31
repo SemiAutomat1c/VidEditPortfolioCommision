@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { HeartIcon, ShareIcon, ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 import { projects } from '@/data/projects'
 
 export default function FeaturedScroll() {
@@ -11,6 +12,8 @@ export default function FeaturedScroll() {
   const [liked, setLiked] = useState<{ [key: string]: boolean }>({})
   const [videoErrors, setVideoErrors] = useState<{ [key: string]: boolean }>({})
   const [isPlaying, setIsPlaying] = useState<{ [key: string]: boolean }>({})
+  const [isLoaded, setIsLoaded] = useState<{ [key: string]: boolean }>({})
+  const [isMuted, setIsMuted] = useState<{ [key: string]: boolean }>({})
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({})
   const playTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({})
   const containerRef = useRef<HTMLDivElement>(null)
@@ -38,10 +41,10 @@ export default function FeaturedScroll() {
           playTimeouts.current[videoId] = setTimeout(async () => {
             try {
               video.currentTime = 0
+              setVideoErrors(prev => ({ ...prev, [videoId]: false }))
               await video.play()
               setIsPlaying(prev => ({ ...prev, [videoId]: true }))
             } catch (err) {
-              // Only log non-abort errors
               if (err instanceof Error && !err.message.includes('aborted')) {
                 console.error('Video play error:', err)
                 setVideoErrors(prev => ({ ...prev, [videoId]: true }))
@@ -95,7 +98,7 @@ export default function FeaturedScroll() {
     setVideoErrors(prev => ({ ...prev, [videoId]: false }))
     
     try {
-      await video.load()
+      video.currentTime = 0
       await video.play()
       setIsPlaying(prev => ({ ...prev, [videoId]: true }))
     } catch (err) {
@@ -106,88 +109,152 @@ export default function FeaturedScroll() {
     }
   }
 
+  const toggleMute = (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation()
+    const video = videoRefs.current[projectId]
+    if (!video) return
+
+    video.muted = !video.muted
+    setIsMuted(prev => ({ ...prev, [projectId]: video.muted }))
+  }
+
   return (
-    <section className="min-h-screen bg-black/95 py-20 relative flex items-center justify-center">
-      <div className="container mx-auto px-4 flex items-center justify-center">
-        {/* Video Player Container */}
-        <div className="relative w-full max-w-[400px] bg-black rounded-2xl overflow-hidden shadow-2xl">
-          {/* Video Container */}
-          <div
-            ref={containerRef}
-            className="h-[calc(100vh-200px)] max-h-[800px] overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {projects.map((project, index) => (
-              <div
-                key={project.id}
-                className="h-full w-full snap-start snap-always relative aspect-[9/16]"
-              >
-                {/* Video or Fallback */}
-                {videoErrors[project.id] ? (
-                  <div 
-                    className="h-full w-full bg-cover bg-center flex items-center justify-center"
-                    style={{ background: project.gradient }}
-                  >
-                    <div className="text-center">
-                      <p className="text-white text-lg mb-4">Failed to load video</p>
-                      <button
-                        onClick={() => handleRetry(project.id)}
-                        className="px-4 py-2 bg-accent hover:bg-accent-light rounded-lg text-white transition-colors"
-                      >
-                        Retry
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <video
-                    ref={el => {
-                      if (el) videoRefs.current[project.id] = el
-                    }}
-                    data-index={index}
-                    data-videoid={project.id}
-                    src={project.videoUrl}
-                    className="h-full w-full object-cover"
-                    playsInline
-                    loop
-                    muted
-                    preload="metadata"
-                  />
-                )}
-
-                {/* Overlay Content */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-white text-xl font-semibold mb-2">{project.title}</h3>
-                  <p className="text-gray-200 text-sm mb-4">{project.description}</p>
-                  
-                  {/* Interaction Stats */}
-                  <div className="flex items-center gap-6">
-                    <button
-                      onClick={() => toggleLike(project.id)}
-                      className="flex items-center gap-2 text-white transition-transform hover:scale-110"
-                    >
-                      {liked[project.id] ? (
-                        <HeartSolidIcon className="w-6 h-6 text-red-500" />
-                      ) : (
-                        <HeartIcon className="w-6 h-6" />
-                      )}
-                      <span>{project.stats?.likes}</span>
-                    </button>
-
-                    <div className="flex items-center gap-2 text-white">
-                      <ChatBubbleOvalLeftIcon className="w-6 h-6" />
-                      <span>{project.stats?.comments}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-white">
-                      <ShareIcon className="w-6 h-6" />
-                      <span>{project.stats?.shares}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+    <section className="min-h-screen relative overflow-hidden bg-white dark:bg-[#0a0a0f]">
+      {/* Animated Gradient Background */}
+      <div className="fixed inset-0">
+        <div className="absolute inset-0 opacity-30 dark:opacity-40">
+          {/* Gradient Mesh - Light Theme */}
+          <div className="absolute -inset-[10%] blur-3xl dark:opacity-0">
+            <div className="absolute top-0 -left-20 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-sky-400/40 to-indigo-400/40 mix-blend-multiply animate-mesh-1" />
+            <div className="absolute top-1/3 -right-20 w-[600px] h-[600px] rounded-full bg-gradient-to-l from-orange-400/40 to-pink-400/40 mix-blend-multiply animate-mesh-2" />
+            <div className="absolute -bottom-40 left-1/3 w-[600px] h-[600px] rounded-full bg-gradient-to-t from-emerald-400/40 to-teal-400/40 mix-blend-multiply animate-mesh-3" />
           </div>
+
+          {/* Gradient Mesh - Dark Theme */}
+          <div className="absolute -inset-[10%] blur-3xl opacity-0 dark:opacity-100">
+            <div className="absolute top-0 -left-20 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-violet-600/30 to-indigo-600/30 mix-blend-screen animate-mesh-1" />
+            <div className="absolute top-1/3 -right-20 w-[600px] h-[600px] rounded-full bg-gradient-to-l from-fuchsia-600/30 to-purple-600/30 mix-blend-screen animate-mesh-2" />
+            <div className="absolute -bottom-40 left-1/3 w-[600px] h-[600px] rounded-full bg-gradient-to-t from-blue-600/30 to-cyan-600/30 mix-blend-screen animate-mesh-3" />
+          </div>
+          
+          {/* Noise Texture */}
+          <div className="absolute inset-0 bg-noise opacity-[0.15] mix-blend-soft-light" />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center py-20">
+        <div className="w-full max-w-[400px]">
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="bg-white/40 dark:bg-black/40 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl"
+          >
+            {/* Video Container */}
+            <div
+              ref={containerRef}
+              className="h-[calc(100vh-200px)] max-h-[800px] overflow-y-auto snap-y snap-mandatory"
+              style={{ scrollbarWidth: 'none' }}
+            >
+              <div className="relative">
+                {projects.map((project, index) => (
+                  <div
+                    key={project.id}
+                    className="h-full w-full snap-start snap-always relative aspect-[9/16]"
+                  >
+                    {/* Loading State */}
+                    {!isLoaded[project.id] && !videoErrors[project.id] && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-gray-300/30 border-t-gray-800 dark:border-white/30 dark:border-t-white rounded-full animate-spin" />
+                      </div>
+                    )}
+
+                    {/* Error State */}
+                    {videoErrors[project.id] && (
+                      <div 
+                        className="h-full w-full bg-cover bg-center flex items-center justify-center"
+                        style={{ background: project.gradient }}
+                      >
+                        <div className="text-center">
+                          <p className="text-white text-lg mb-4">Failed to load video</p>
+                          <button
+                            onClick={() => handleRetry(project.id)}
+                            className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-white transition-colors"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Video */}
+                    <video
+                      ref={el => {
+                        if (el) videoRefs.current[project.id] = el
+                      }}
+                      data-index={index}
+                      data-videoid={project.id}
+                      src={project.videoUrl}
+                      className={`h-full w-full object-cover transition-opacity duration-300 ${
+                        isLoaded[project.id] && !videoErrors[project.id] ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      playsInline
+                      loop
+                      muted
+                      preload="metadata"
+                      onError={() => {
+                        setVideoErrors(prev => ({ ...prev, [project.id]: true }))
+                        setIsLoaded(prev => ({ ...prev, [project.id]: false }))
+                      }}
+                      onLoadedData={() => {
+                        setIsLoaded(prev => ({ ...prev, [project.id]: true }))
+                        setVideoErrors(prev => ({ ...prev, [project.id]: false }))
+                      }}
+                    />
+
+                    {/* Video Info */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/50 to-transparent">
+                      <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
+                      <p className="text-sm text-gray-300 mb-4">{project.description}</p>
+                      
+                      {/* Engagement Stats */}
+                      <div className="flex items-center gap-4">
+                        <button 
+                          className="flex items-center gap-1"
+                          onClick={() => toggleLike(project.id)}
+                        >
+                          {liked[project.id] ? (
+                            <HeartSolidIcon className="h-6 w-6 text-red-500" />
+                          ) : (
+                            <HeartIcon className="h-6 w-6 text-white" />
+                          )}
+                          <span className="text-white">{project.stats?.likes || '0'}</span>
+                        </button>
+                        <div className="flex items-center gap-1">
+                          <ChatBubbleOvalLeftIcon className="h-6 w-6 text-white" />
+                          <span className="text-white">{project.stats?.comments || '0'}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <ShareIcon className="h-6 w-6 text-white" />
+                          <span className="text-white">{project.stats?.shares || '0'}</span>
+                        </div>
+                        <button 
+                          className="flex items-center gap-1"
+                          onClick={(e) => toggleMute(e, project.id)}
+                        >
+                          {isMuted[project.id] ? (
+                            <SpeakerXMarkIcon className="h-6 w-6 text-white" />
+                          ) : (
+                            <SpeakerWaveIcon className="h-6 w-6 text-white" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,96 +1,94 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import ThemeToggle from './ThemeToggle'
+import { useTheme } from 'next-themes'
+import Link from 'next/link'
+import { SunIcon, MoonIcon } from '@heroicons/react/24/outline'
 
-const navigation = [
+const navLinks = [
   { name: 'Home', href: '/' },
-  { name: 'About', href: '#about' },
-  { name: 'Portfolio', href: '#portfolio' },
-  { name: 'Services', href: '#services' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'About', href: '/about' },
+  { name: 'Portfolio', href: '/portfolio' },
+  { name: 'Services', href: '/services' },
+  { name: 'Contact', href: '/contact' },
 ]
 
 export default function Navigation() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  if (!mounted) {
-    return null // Return null on server-side
-  }
+  if (!mounted) return null
 
   return (
-    <header className="fixed w-full z-50 bg-primary-light/80 dark:bg-primary/80 backdrop-blur-sm border-b border-gray-dark-light/10 dark:border-gray-dark/10">
-      <nav className="container mx-auto px-6 py-4">
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
+        isScrolled 
+          ? 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-lg'
+          : 'bg-transparent'
+      }`}
+    >
+      <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <Link href="/" className="text-2xl font-bold text-primary dark:text-white">
-              Jayrome Pillo
-            </Link>
-          </div>
+          {/* Logo */}
+          <Link 
+            href="/"
+            className={`text-xl font-bold transition-colors ${
+              isScrolled
+                ? 'text-gray-900 dark:text-white'
+                : 'text-gray-900 dark:text-white'
+            }`}
+          >
+            Jayrome Pillo
+          </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex md:gap-x-8 items-center">
-            {navigation.map((item) => (
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
               <Link
-                key={item.name}
-                href={item.href}
-                className="text-gray-light-light dark:text-gray-light hover:text-accent dark:hover:text-accent transition-colors"
+                key={link.name}
+                href={link.href}
+                className={`font-medium transition-colors ${
+                  isScrolled
+                    ? 'text-gray-700 hover:text-purple-600 dark:text-gray-200 dark:hover:text-purple-400'
+                    : 'text-gray-900 hover:text-purple-600 dark:text-white dark:hover:text-purple-400'
+                }`}
               >
-                {item.name}
+                {link.name}
               </Link>
             ))}
-            <ThemeToggle />
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex md:hidden items-center gap-4">
-            <ThemeToggle />
-            <button
-              type="button"
-              className="text-gray-light-light dark:text-gray-light hover:text-accent dark:hover:text-accent"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <span className="sr-only">Open main menu</span>
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3Icon className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden pt-4"
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className={`p-2 rounded-xl transition-colors ${
+              isScrolled
+                ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'
+                : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'
+            }`}
+            aria-label="Toggle theme"
           >
-            <div className="flex flex-col gap-4">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-light-light dark:text-gray-light hover:text-accent dark:hover:text-accent transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
+            {theme === 'dark' ? (
+              <SunIcon className="w-5 h-5 text-yellow-500" />
+            ) : (
+              <MoonIcon className="w-5 h-5 text-gray-700" />
+            )}
+          </button>
+        </div>
       </nav>
-    </header>
+    </motion.header>
   )
 } 

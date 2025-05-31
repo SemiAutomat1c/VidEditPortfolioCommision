@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Hero from '@/components/Hero'
+import About from '@/components/About'
 import Services from '@/components/Services'
 import FeaturedScroll from '@/components/FeaturedScroll'
 import SkillsShowcase from '@/components/SkillsShowcase'
@@ -31,6 +32,9 @@ export default function Home() {
       <main className="bg-primary-light dark:bg-primary text-primary dark:text-white relative">
         {/* Hero Section */}
         <Hero />
+
+        {/* About Section */}
+        <About />
 
         {/* Featured Work Section */}
         <FeaturedScroll />

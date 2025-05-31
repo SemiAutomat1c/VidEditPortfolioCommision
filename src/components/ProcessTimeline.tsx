@@ -16,37 +16,37 @@ const steps = [
     icon: ClipboardDocumentIcon,
     title: 'Planning & Storyboarding',
     description: 'Understanding your vision and planning the perfect edit flow',
-    color: 'from-pink-500 to-rose-500'
+    color: 'from-accent-pink to-accent-purple'
   },
   {
     icon: VideoCameraIcon,
     title: 'Footage Review',
     description: 'Selecting the best clips and organizing content',
-    color: 'from-purple-500 to-indigo-500'
+    color: 'from-accent-purple to-accent-blue'
   },
   {
     icon: ScissorsIcon,
     title: 'Initial Cut',
     description: 'Creating the basic structure and timing',
-    color: 'from-blue-500 to-cyan-500'
+    color: 'from-accent-blue to-accent-cyan'
   },
   {
     icon: SparklesIcon,
     title: 'Effects & Transitions',
     description: 'Adding dynamic effects and smooth transitions',
-    color: 'from-teal-500 to-green-500'
+    color: 'from-accent-cyan to-accent-blue'
   },
   {
     icon: MusicalNoteIcon,
     title: 'Sound Design',
     description: 'Perfecting audio and adding music',
-    color: 'from-amber-500 to-orange-500'
+    color: 'from-accent-blue to-accent-purple'
   },
   {
     icon: ArrowUpRightIcon,
     title: 'Final Delivery',
     description: 'Optimizing for platforms and exporting',
-    color: 'from-red-500 to-pink-500'
+    color: 'from-accent-purple to-accent-pink'
   }
 ]
 

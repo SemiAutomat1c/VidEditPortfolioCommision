@@ -118,8 +118,8 @@ export default function FloatingCTA() {
                         onClick={() => setSelectedType(type)}
                         className={`p-4 rounded-lg border-2 text-left transition-colors ${
                           selectedType.name === type.name
-                            ? 'border-accent bg-accent/5'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-accent/50'
+                            ? 'border-accent-purple bg-gradient-main from-accent-pink/10 via-accent-purple/10 to-accent-blue/10'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-accent-purple/50'
                         }`}
                       >
                         <div className="font-medium text-primary dark:text-white mb-1">
@@ -183,6 +183,14 @@ export default function FloatingCTA() {
                       </a>
                     ))}
                   </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="w-full py-3 px-6 bg-gradient-main from-accent-pink via-accent-purple to-accent-blue text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Get Started
+                  </button>
                 </div>
               </div>
             </motion.div>

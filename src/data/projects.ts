@@ -40,44 +40,6 @@ export const projects: Project[] = [
     gradient: "linear-gradient(to bottom right, #4158D0, #C850C0)"
   },
   {
-    id: "3",
-    title: "Visual Symphony",
-    description: "Complex visual effects and synchronized motion. #visualeffects #editing #premium",
-    videoUrl: "/videos/Edit 3.mp4",
-    thumbnailUrl: "/videos/Edit 3.mp4",
-    isPortrait: true,
-    date: "2024-03-15",
-    categories: ["VFX", "Motion", "Premium"],
-    technologies: ["After Effects", "Cinema 4D"],
-    client: "Portfolio",
-    stats: {
-      likes: "156K",
-      views: "1.5M",
-      shares: "48K",
-      comments: "4.1K"
-    },
-    gradient: "linear-gradient(to bottom right, #0093E9, #80D0C7)"
-  },
-  {
-    id: "4",
-    title: "Perfect Rhythm",
-    description: "Beat-matched cuts and musical synchronization. #musicvideo #sync #beats",
-    videoUrl: "/videos/Edit 4.mp4",
-    thumbnailUrl: "/videos/Edit 4.mp4",
-    isPortrait: true,
-    date: "2024-03-12",
-    categories: ["Music", "Rhythm", "Sync"],
-    technologies: ["Premiere Pro", "Audition"],
-    client: "Portfolio",
-    stats: {
-      likes: "112K",
-      views: "980K",
-      shares: "38K",
-      comments: "2.9K"
-    },
-    gradient: "linear-gradient(to bottom right, #8EC5FC, #E0C3FC)"
-  },
-  {
     id: "5",
     title: "Smooth Cuts",
     description: "Clean and precise editing with perfect timing. #editing #precision #flow",
@@ -95,25 +57,6 @@ export const projects: Project[] = [
       comments: "2.4K"
     },
     gradient: "linear-gradient(to bottom right, #D9AFD9, #97D9E1)"
-  },
-  {
-    id: "6",
-    title: "Creative Vision",
-    description: "Unique visual style with creative effects. #creative #unique #style",
-    videoUrl: "/videos/Edit 6.mp4",
-    thumbnailUrl: "/videos/Edit 6.mp4",
-    isPortrait: true,
-    date: "2024-03-08",
-    categories: ["Creative", "Style", "Effects"],
-    technologies: ["After Effects", "Photoshop"],
-    client: "Portfolio",
-    stats: {
-      likes: "134K",
-      views: "1.3M",
-      shares: "42K",
-      comments: "3.6K"
-    },
-    gradient: "linear-gradient(to bottom right, #85FFBD, #FFFB7D)"
   },
   {
     id: "7",
@@ -155,21 +98,22 @@ export const projects: Project[] = [
   }
 ]
 
-export const comparisonProjects: ComparisonProject[] = [
-  {
-    title: "Seamless Transitions",
-    description: "See how raw clips transform into smooth, engaging content",
-    beforeVideo: "/videos/before-1.mp4",
-    afterVideo: "/videos/after-1.mp4",
-    category: "Transitions",
-    tags: ["Transitions", "Flow", "Editing"]
-  },
-  {
-    title: "Color Grading Magic",
-    description: "Watch flat footage become vibrant and cinematic",
-    beforeVideo: "/videos/before-2.mp4",
-    afterVideo: "/videos/after-2.mp4",
-    category: "Color",
-    tags: ["Color Grading", "Cinematic", "Look"]
-  }
-]
+// Since there are no before/after comparison videos yet, we'll comment this out
+// export const comparisonProjects: ComparisonProject[] = [
+//   {
+//     title: "Seamless Transitions",
+//     description: "See how raw clips transform into smooth, engaging content",
+//     beforeVideo: "/videos/before-1.mp4",
+//     afterVideo: "/videos/after-1.mp4",
+//     category: "Transitions",
+//     tags: ["Transitions", "Flow", "Editing"]
+//   },
+//   {
+//     title: "Color Grading Magic",
+//     description: "Watch flat footage become vibrant and cinematic",
+//     beforeVideo: "/videos/before-2.mp4",
+//     afterVideo: "/videos/after-2.mp4",
+//     category: "Color",
+//     tags: ["Color Grading", "Cinematic", "Look"]
+//   }
+// ]
