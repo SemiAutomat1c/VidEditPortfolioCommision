@@ -11,6 +11,24 @@ const nextConfig = {
   experimental: {
     largePageDataBytes: 128 * 1000 * 1000, // 128MB
   },
+  // Add headers for video files
+  async headers() {
+    return [
+      {
+        source: '/videos/:path*',
+        headers: [
+          {
+            key: 'Accept-Ranges',
+            value: 'bytes'
+          },
+          {
+            key: 'Content-Type',
+            value: 'video/mp4'
+          }
+        ],
+      },
+    ]
+  }
 }
 
 module.exports = nextConfig 

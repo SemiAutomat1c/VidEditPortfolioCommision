@@ -14,64 +14,101 @@ export default function FeaturedScroll() {
   const [isPlaying, setIsPlaying] = useState<{ [key: string]: boolean }>({})
   const [isLoaded, setIsLoaded] = useState<{ [key: string]: boolean }>({})
   const [isMuted, setIsMuted] = useState<{ [key: string]: boolean }>({})
-  const videoRefs = useRef<{ [key: string]: HTMLVideoElement }>({})
-  const playTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({})
-  const containerRef = useRef<HTMLDivElement>(null)
+  const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({})
   const observerRef = useRef<IntersectionObserver | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isInitializedRef = useRef<boolean>(false)
+
+  // Initialize video refs
+  useEffect(() => {
+    if (isInitializedRef.current) return
+    isInitializedRef.current = true
+
+    projects.forEach(project => {
+      videoRefs.current[project.id] = null
+    })
+  }, [])
 
   // Handle video playback based on visibility
   useEffect(() => {
+    if (!containerRef.current) return
+
     const options = {
       root: containerRef.current,
-      threshold: 0.7, // Video needs to be 70% visible
+      threshold: 0.7,
     }
 
-    observerRef.current = new IntersectionObserver((entries) => {
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
       entries.forEach((entry) => {
         const video = entry.target as HTMLVideoElement
-        const videoId = video.dataset.videoid || ''
+        const videoId = video.dataset.videoid
 
-        // Clear any existing timeout for this video
-        if (playTimeouts.current[videoId]) {
-          clearTimeout(playTimeouts.current[videoId])
-        }
+        if (!videoId || !videoRefs.current[videoId]) return
 
         if (entry.isIntersecting) {
-          // Add a small delay before playing
-          playTimeouts.current[videoId] = setTimeout(async () => {
-            try {
-              video.currentTime = 0
-              setVideoErrors(prev => ({ ...prev, [videoId]: false }))
-              await video.play()
-              setIsPlaying(prev => ({ ...prev, [videoId]: true }))
-            } catch (err) {
-              if (err instanceof Error && !err.message.includes('aborted')) {
-                console.error('Video play error:', err)
-                setVideoErrors(prev => ({ ...prev, [videoId]: true }))
-              }
+          try {
+            video.currentTime = 0
+            video.muted = true
+            setVideoErrors(prev => ({ ...prev, [videoId]: false }))
+            
+            // Attempt to play
+            const playPromise = video.play()
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  setIsPlaying(prev => ({ ...prev, [videoId]: true }))
+                })
+                .catch(err => {
+                  console.error('Video play error:', err)
+                  setVideoErrors(prev => ({ ...prev, [videoId]: true }))
+                  setIsPlaying(prev => ({ ...prev, [videoId]: false }))
+                })
             }
-          }, 100)
-          
-          setActiveVideo(parseInt(video.dataset.index || '0'))
+          } catch (err) {
+            console.error('Video error:', err)
+            setVideoErrors(prev => ({ ...prev, [videoId]: true }))
+            setIsPlaying(prev => ({ ...prev, [videoId]: false }))
+          }
         } else {
-          video.pause()
-          video.currentTime = 0
-          setIsPlaying(prev => ({ ...prev, [videoId]: false }))
+          try {
+            video.pause()
+            video.currentTime = 0
+            setIsPlaying(prev => ({ ...prev, [videoId]: false }))
+          } catch (err) {
+            console.warn('Error pausing video:', err)
+          }
         }
       })
-    }, options)
+    }
 
-    // Observe all videos
-    Object.values(videoRefs.current).forEach((video) => {
-      if (video) observerRef.current?.observe(video)
+    observerRef.current = new IntersectionObserver(handleIntersection, options)
+
+    // Observe videos that are already mounted
+    Object.entries(videoRefs.current).forEach(([id, video]) => {
+      if (video && !video.dataset.observed) {
+        video.dataset.observed = 'true'
+        observerRef.current?.observe(video)
+      }
     })
 
     return () => {
-      // Clear all timeouts
-      Object.values(playTimeouts.current).forEach(timeout => clearTimeout(timeout))
-      observerRef.current?.disconnect()
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
     }
   }, [])
+
+  // Handle video ref updates
+  const setVideoRef = (el: HTMLVideoElement | null, projectId: string) => {
+    if (!el || videoRefs.current[projectId] === el) return
+
+    videoRefs.current[projectId] = el
+    
+    if (el && !el.dataset.observed && observerRef.current) {
+      el.dataset.observed = 'true'
+      observerRef.current.observe(el)
+    }
+  }
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -93,19 +130,29 @@ export default function FeaturedScroll() {
 
   const handleRetry = async (videoId: string) => {
     const video = videoRefs.current[videoId]
-    if (!video) return
+    if (!video) {
+      console.error('Video element not found for ID:', videoId)
+      return
+    }
 
-    setVideoErrors(prev => ({ ...prev, [videoId]: false }))
-    
     try {
+      // Reset error state first
+      setVideoErrors(prev => ({ ...prev, [videoId]: false }))
+      setIsLoaded(prev => ({ ...prev, [videoId]: false }))
+      
+      // Reset video element
       video.currentTime = 0
+      video.load() // Reload the video element
+      
+      // Try to play
       await video.play()
       setIsPlaying(prev => ({ ...prev, [videoId]: true }))
+      setIsLoaded(prev => ({ ...prev, [videoId]: true }))
     } catch (err) {
-      if (err instanceof Error && !err.message.includes('aborted')) {
-        console.error('Video retry error:', err)
-        setVideoErrors(prev => ({ ...prev, [videoId]: true }))
-      }
+      console.error('Video retry error:', err)
+      setVideoErrors(prev => ({ ...prev, [videoId]: true }))
+      setIsLoaded(prev => ({ ...prev, [videoId]: false }))
+      setIsPlaying(prev => ({ ...prev, [videoId]: false }))
     }
   }
 
@@ -189,9 +236,7 @@ export default function FeaturedScroll() {
 
                     {/* Video */}
                     <video
-                      ref={el => {
-                        if (el) videoRefs.current[project.id] = el
-                      }}
+                      ref={el => setVideoRef(el, project.id)}
                       data-index={index}
                       data-videoid={project.id}
                       src={project.videoUrl}
@@ -201,12 +246,19 @@ export default function FeaturedScroll() {
                       playsInline
                       loop
                       muted
-                      preload="metadata"
-                      onError={() => {
+                      preload="auto"
+                      onError={(e) => {
+                        const target = e.target as HTMLVideoElement
+                        console.error('Video load error:', {
+                          id: project.id,
+                          src: target.src,
+                          error: target.error
+                        })
                         setVideoErrors(prev => ({ ...prev, [project.id]: true }))
                         setIsLoaded(prev => ({ ...prev, [project.id]: false }))
                       }}
                       onLoadedData={() => {
+                        console.log('Video loaded:', project.id)
                         setIsLoaded(prev => ({ ...prev, [project.id]: true }))
                         setVideoErrors(prev => ({ ...prev, [project.id]: false }))
                       }}
