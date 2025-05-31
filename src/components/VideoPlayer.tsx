@@ -2,140 +2,212 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
-import { 
-  PlayIcon, 
-  PauseIcon, 
-  SpeakerWaveIcon, 
-  SpeakerXMarkIcon,
-  ArrowsPointingOutIcon
-} from '@heroicons/react/24/solid'
-import { logVideoInteraction } from '@/utils/analytics'
+import { PlayIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
 
 interface VideoPlayerProps {
   src: string
   title: string
-  poster?: string
-  onEnterFullscreen?: () => void
+  isPortrait?: boolean
+  priority?: boolean
+  startMuted?: boolean
+  showSoundControl?: boolean
 }
 
-export default function VideoPlayer({ src, title, poster, onEnterFullscreen }: VideoPlayerProps) {
+export default function VideoPlayer({ 
+  src, 
+  title, 
+  isPortrait = true,
+  priority = false,
+  startMuted = false,
+  showSoundControl = true
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [isHovering, setIsHovering] = useState(false)
+  const [isMuted, setIsMuted] = useState(startMuted)
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadingRef = useRef<boolean>(false)
 
+  // Reset state when src changes
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    setIsLoaded(false)
+    setError(null)
+    setIsPlaying(false)
+    loadingRef.current = false
+  }, [src])
 
-    const handleTimeUpdate = () => {
-      setProgress((video.currentTime / video.duration) * 100)
+  // Intersection Observer setup
+  useEffect(() => {
+    if (priority) {
+      setIsVisible(true)
+      return
     }
 
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration)
-      setIsLoaded(true)
-      setError(null)
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting)
+        })
+      },
+      {
+        threshold: 0.5,
+      }
+    )
+
+    if (videoRef.current) {
+      observerRef.current.observe(videoRef.current)
     }
-
-    const handleEnded = () => {
-      setIsPlaying(false)
-      logVideoInteraction('complete', title)
-    }
-
-    const handleError = (e: ErrorEvent) => {
-      console.error('Video error:', e)
-      setError('Failed to load video')
-      setIsLoaded(false)
-    }
-
-    video.addEventListener('timeupdate', handleTimeUpdate)
-    video.addEventListener('loadedmetadata', handleLoadedMetadata)
-    video.addEventListener('ended', handleEnded)
-    video.addEventListener('error', handleError as EventListener)
-
-    // Preload the video
-    video.load()
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate)
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      video.removeEventListener('ended', handleEnded)
-      video.removeEventListener('error', handleError as EventListener)
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
     }
-  }, [title])
+  }, [priority])
 
-  const togglePlay = async () => {
-    if (!videoRef.current) return
+  // Handle video loading and playback
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !isVisible || loadingRef.current) return
+
+    const playVideo = async () => {
+      try {
+        loadingRef.current = true
+        video.playsInline = true
+        video.preload = priority ? "auto" : "metadata"
+        video.muted = startMuted
+
+        if (priority || document.visibilityState === 'visible') {
+          try {
+            await video.play()
+          } catch (err) {
+            video.muted = true
+            setIsMuted(true)
+            await video.play()
+          }
+          setIsPlaying(true)
+        }
+      } catch (err) {
+        console.error('Error auto-playing video:', err)
+        setError('Failed to play video')
+      } finally {
+        loadingRef.current = false
+      }
+    }
+
+    // Only load if we have a valid src
+    if (src) {
+      video.load()
+      playVideo()
+    }
+
+    return () => {
+      // Only cleanup if we're unmounting or src is changing
+      if (video) {
+        video.pause()
+        // Remove src and clear error states before cleanup
+        if (video.src) {
+          video.removeAttribute('src')
+          video.load()
+        }
+        setIsPlaying(false)
+        setError(null)
+        loadingRef.current = false
+      }
+    }
+  }, [src, isVisible, priority, startMuted])
+
+  // Handle visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const video = videoRef.current
+      if (!video || !isVisible || loadingRef.current) return
+
+      if (document.visibilityState === 'visible' && !isPlaying) {
+        video.play().catch(() => {})
+      } else if (document.visibilityState === 'hidden' && isPlaying) {
+        video.pause()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isPlaying, isVisible])
+
+  const togglePlayback = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const video = videoRef.current
+    if (!video || loadingRef.current) return
 
     try {
       if (isPlaying) {
-        await videoRef.current.pause()
-        logVideoInteraction('pause', title)
+        video.pause()
       } else {
-        await videoRef.current.play()
-        logVideoInteraction('play', title)
+        await video.play()
       }
       setIsPlaying(!isPlaying)
     } catch (err) {
-      console.error('Error toggling play:', err)
+      console.error('Error toggling video playback:', err)
       setError('Failed to play video')
     }
   }
 
-  const toggleMute = () => {
-    if (!videoRef.current) return
-    videoRef.current.muted = !isMuted
-    setIsMuted(!isMuted)
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const video = videoRef.current
+    if (!video) return
+
+    video.muted = !video.muted
+    setIsMuted(video.muted)
   }
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!videoRef.current) return
-
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const percentage = (x / rect.width) * 100
-    const time = (percentage / 100) * duration
-
-    videoRef.current.currentTime = time
-    setProgress(percentage)
+  const handleLoadedData = () => {
+    setIsLoaded(true)
+    setError(null)
+    loadingRef.current = false
   }
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+  const handleError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    const video = e.target as HTMLVideoElement
+    // Only set error if we have a src and it's not a cleanup-related error
+    if (video.src) {
+      setError('Failed to load video')
+      setIsPlaying(false)
+      setIsLoaded(false)
+    }
+    loadingRef.current = false
   }
 
   return (
     <div 
-      className="relative group rounded-lg overflow-hidden bg-gray-900"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      className="relative bg-black"
+      style={{ aspectRatio: isPortrait ? '9/16' : '16/9' }}
     >
+      {/* Loading State */}
       {!isLoaded && !error && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
+      {/* Error State */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-          <div className="text-white text-center">
-            <p className="mb-2">{error}</p>
+          <div className="text-center">
+            <p className="text-white mb-2">{error}</p>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation()
                 setError(null)
-                if (videoRef.current) {
+                if (videoRef.current && !loadingRef.current) {
                   videoRef.current.load()
                 }
               }}
-              className="px-4 py-2 bg-primary rounded-lg hover:bg-primary-light transition-colors"
+              className="px-4 py-2 bg-accent hover:bg-accent-light rounded-lg text-white transition-colors"
             >
               Retry
             </button>
@@ -143,97 +215,49 @@ export default function VideoPlayer({ src, title, poster, onEnterFullscreen }: V
         </div>
       )}
 
+      {/* Video */}
       <video
         ref={videoRef}
-        src={src}
-        poster={poster}
-        className="w-full aspect-video object-cover"
-        onClick={togglePlay}
+        src={isVisible ? src : undefined}
+        className="absolute inset-0 w-full h-full object-cover"
         playsInline
-        preload="metadata"
+        loop
+        preload={priority ? "auto" : "metadata"}
+        onLoadedData={handleLoadedData}
+        onError={handleError}
       />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isHovering || !isPlaying ? 1 : 0 }}
-        transition={{ duration: 0.2 }}
-        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0"
+      {/* Controls Overlay */}
+      <div 
+        className="absolute inset-0 flex items-center justify-center cursor-pointer"
+        onClick={togglePlayback}
       >
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div 
-            className="w-full h-1 bg-gray-600 rounded-full mb-4 cursor-pointer"
-            onClick={handleProgressClick}
+        {/* Play/Pause Button */}
+        {!isPlaying && isLoaded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-black/40 rounded-full p-4"
           >
-            <div 
-              className="h-full bg-primary rounded-full relative"
-              style={{ width: `${progress}%` }}
-            >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full" />
-            </div>
-          </div>
+            <PlayIcon className="w-16 h-16 text-white" />
+          </motion.div>
+        )}
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={togglePlay}
-                className="text-white hover:text-primary transition-colors"
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-              >
-                {isPlaying ? (
-                  <PauseIcon className="w-8 h-8" />
-                ) : (
-                  <PlayIcon className="w-8 h-8" />
-                )}
-              </button>
-
-              <button
-                onClick={toggleMute}
-                className="text-white hover:text-primary transition-colors"
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
-              >
-                {isMuted ? (
-                  <SpeakerXMarkIcon className="w-6 h-6" />
-                ) : (
-                  <SpeakerWaveIcon className="w-6 h-6" />
-                )}
-              </button>
-
-              <span className="text-white text-sm">
-                {formatTime(videoRef.current?.currentTime || 0)} / {formatTime(duration)}
-              </span>
-            </div>
-
-            {onEnterFullscreen && (
-              <button
-                onClick={onEnterFullscreen}
-                className="text-white hover:text-primary transition-colors"
-                aria-label="Enter fullscreen"
-              >
-                <ArrowsPointingOutIcon className="w-6 h-6" />
-              </button>
+        {/* Sound Control */}
+        {showSoundControl && (
+          <button
+            onClick={toggleMute}
+            className="absolute bottom-4 right-4 p-2 bg-black/40 rounded-full hover:bg-black/60 transition-colors"
+          >
+            {isMuted ? (
+              <SpeakerXMarkIcon className="w-6 h-6 text-white" />
+            ) : (
+              <SpeakerWaveIcon className="w-6 h-6 text-white" />
             )}
-          </div>
-        </div>
-      </motion.div>
-
-      {!isPlaying && !error && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={togglePlay}
-            className="bg-primary/80 hover:bg-primary text-white rounded-full p-4 backdrop-blur-sm"
-            aria-label="Play video"
-          >
-            <PlayIcon className="w-12 h-12" />
-          </motion.button>
-        </motion.div>
-      )}
+          </button>
+        )}
+      </div>
     </div>
   )
 } 
