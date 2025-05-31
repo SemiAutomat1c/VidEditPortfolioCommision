@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { PlayIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/solid'
+import { PlayIcon, SpeakerWaveIcon, SpeakerXMarkIcon, ArrowsPointingOutIcon } from '@heroicons/react/24/solid'
 
 interface VideoPlayerProps {
   src: string
@@ -11,6 +11,7 @@ interface VideoPlayerProps {
   priority?: boolean
   startMuted?: boolean
   showSoundControl?: boolean
+  onEnterFullscreen?: () => void
 }
 
 export default function VideoPlayer({ 
@@ -19,14 +20,17 @@ export default function VideoPlayer({
   isPortrait = true,
   priority = false,
   startMuted = false,
-  showSoundControl = true
+  showSoundControl = true,
+  onEnterFullscreen
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(startMuted)
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadingRef = useRef<boolean>(false)
 
@@ -37,6 +41,18 @@ export default function VideoPlayer({
     setIsPlaying(false)
     loadingRef.current = false
   }, [src])
+
+  // Handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement !== null)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
 
   // Intersection Observer setup
   useEffect(() => {
@@ -97,17 +113,14 @@ export default function VideoPlayer({
       }
     }
 
-    // Only load if we have a valid src
     if (src) {
       video.load()
       playVideo()
     }
 
     return () => {
-      // Only cleanup if we're unmounting or src is changing
       if (video) {
         video.pause()
-        // Remove src and clear error states before cleanup
         if (video.src) {
           video.removeAttribute('src')
           video.load()
@@ -165,6 +178,23 @@ export default function VideoPlayer({
     setIsMuted(video.muted)
   }
 
+  const handleFullscreen = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const container = containerRef.current
+    if (!container) return
+
+    try {
+      if (!isFullscreen) {
+        await container.requestFullscreen()
+        onEnterFullscreen?.()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch (err) {
+      console.error('Error toggling fullscreen:', err)
+    }
+  }
+
   const handleLoadedData = () => {
     setIsLoaded(true)
     setError(null)
@@ -173,7 +203,6 @@ export default function VideoPlayer({
 
   const handleError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     const video = e.target as HTMLVideoElement
-    // Only set error if we have a src and it's not a cleanup-related error
     if (video.src) {
       setError('Failed to load video')
       setIsPlaying(false)
@@ -184,6 +213,7 @@ export default function VideoPlayer({
 
   return (
     <div 
+      ref={containerRef}
       className="relative bg-black"
       style={{ aspectRatio: isPortrait ? '9/16' : '16/9' }}
     >
@@ -244,19 +274,30 @@ export default function VideoPlayer({
           </motion.div>
         )}
 
-        {/* Sound Control */}
-        {showSoundControl && (
+        {/* Control Buttons */}
+        <div className="absolute bottom-4 right-4 flex gap-2">
+          {/* Sound Control */}
+          {showSoundControl && (
+            <button
+              onClick={toggleMute}
+              className="p-2 bg-black/40 rounded-full hover:bg-black/60 transition-colors"
+            >
+              {isMuted ? (
+                <SpeakerXMarkIcon className="w-6 h-6 text-white" />
+              ) : (
+                <SpeakerWaveIcon className="w-6 h-6 text-white" />
+              )}
+            </button>
+          )}
+
+          {/* Fullscreen Control */}
           <button
-            onClick={toggleMute}
-            className="absolute bottom-4 right-4 p-2 bg-black/40 rounded-full hover:bg-black/60 transition-colors"
+            onClick={handleFullscreen}
+            className="p-2 bg-black/40 rounded-full hover:bg-black/60 transition-colors"
           >
-            {isMuted ? (
-              <SpeakerXMarkIcon className="w-6 h-6 text-white" />
-            ) : (
-              <SpeakerWaveIcon className="w-6 h-6 text-white" />
-            )}
+            <ArrowsPointingOutIcon className="w-6 h-6 text-white" />
           </button>
-        )}
+        </div>
       </div>
     </div>
   )
