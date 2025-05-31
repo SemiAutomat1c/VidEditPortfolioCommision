@@ -1,12 +1,17 @@
 import { Project, ComparisonProject } from '@/types/project'
+import edit1 from '@/assets/videos/Edit 1.mp4'
+import edit2 from '@/assets/videos/Edit 2.mp4'
+import edit5 from '@/assets/videos/Edit 5.mp4'
+import edit7 from '@/assets/videos/Edit 7.mp4'
+import edit8 from '@/assets/videos/Edit 8.mp4'
 
 export const projects: Project[] = [
   {
     id: "1",
     title: "Dynamic Transitions",
     description: "Fast-paced edit with seamless flow and creative transitions. #editing #transitions #creative",
-    videoUrl: "/videos/Edit%201.mp4",
-    thumbnailUrl: "/videos/Edit%201.mp4",
+    videoUrl: edit1,
+    thumbnailUrl: edit1,
     isPortrait: true,
     date: "2024-03-20",
     categories: ["Transitions", "Effects", "Creative"],
@@ -24,8 +29,8 @@ export const projects: Project[] = [
     id: "2",
     title: "Cinematic Flow",
     description: "Smooth cinematic sequences with professional color grading. #cinematic #storytelling #smooth",
-    videoUrl: "/videos/Edit%202.mp4",
-    thumbnailUrl: "/videos/Edit%202.mp4",
+    videoUrl: edit2,
+    thumbnailUrl: edit2,
     isPortrait: true,
     date: "2024-03-18",
     categories: ["Cinematic", "Color Grading", "Storytelling"],
@@ -43,8 +48,8 @@ export const projects: Project[] = [
     id: "5",
     title: "Smooth Cuts",
     description: "Clean and precise editing with perfect timing. #editing #precision #flow",
-    videoUrl: "/videos/Edit%205.mp4",
-    thumbnailUrl: "/videos/Edit%205.mp4",
+    videoUrl: edit5,
+    thumbnailUrl: edit5,
     isPortrait: true,
     date: "2024-03-10",
     categories: ["Editing", "Precision", "Flow"],
@@ -62,8 +67,8 @@ export const projects: Project[] = [
     id: "7",
     title: "Motion Magic",
     description: "Smooth motion graphics and text animations. #motion #effects #smooth",
-    videoUrl: "/videos/Edit%207.mp4",
-    thumbnailUrl: "/videos/Edit%207.mp4",
+    videoUrl: edit7,
+    thumbnailUrl: edit7,
     isPortrait: true,
     date: "2024-03-05",
     categories: ["Motion", "Graphics", "Animation"],
@@ -81,8 +86,8 @@ export const projects: Project[] = [
     id: "8",
     title: "Perfect Timing",
     description: "Precisely timed transitions and effects. #timing #transitions #pro",
-    videoUrl: "/videos/Edit%208.mp4",
-    thumbnailUrl: "/videos/Edit%208.mp4",
+    videoUrl: edit8,
+    thumbnailUrl: edit8,
     isPortrait: true,
     date: "2024-03-01",
     categories: ["Timing", "Transitions", "Professional"],
