@@ -6,6 +6,9 @@ const nextConfig = {
     domains: [],
     remotePatterns: [],
   },
+  // Ensure static files are copied to the output
+  distDir: '.next',
+  // Configure webpack to handle video files
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(mp4|webm)$/i,
