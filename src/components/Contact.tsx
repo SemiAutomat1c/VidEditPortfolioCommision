@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   EnvelopeIcon,
   PhoneIcon,
@@ -19,20 +19,21 @@ import {
   VimeoIcon,
   LinkedInIcon,
   YoutubeIcon,
+  FacebookIcon,
 } from '@/components/icons/SocialIcons'
 
 const socialLinks = [
   {
-    name: 'Instagram',
+    name: 'Facebook',
     icon: FaInstagram,
-    url: '#',
-    color: 'hover:text-[#E4405F]'
+    url: 'https://www.facebook.com/jay288516124',
+    color: 'hover:text-[#1877F2]'
   },
   {
-    name: 'Vimeo',
-    icon: FaVimeoV,
-    url: '#',
-    color: 'hover:text-[#1AB7EA]'
+    name: 'Instagram',
+    icon: FaInstagram,
+    url: 'https://www.instagram.com/roxinant3/',
+    color: 'hover:text-[#E4405F]'
   },
   {
     name: 'LinkedIn',
@@ -177,7 +178,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Email</p>
-                    <p className="text-gray-900 dark:text-white">your.email@example.com</p>
+                    <p className="text-gray-900 dark:text-white">Jaypillo2324@gmail.com</p>
                   </div>
                 </div>
 
@@ -187,7 +188,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Phone</p>
-                    <p className="text-gray-900 dark:text-white">+1 (234) 567-8900</p>
+                    <p className="text-gray-900 dark:text-white">+63 9943739840</p>
                   </div>
                 </div>
 
@@ -197,7 +198,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Location</p>
-                    <p className="text-gray-900 dark:text-white">New York City, NY</p>
+                    <p className="text-gray-900 dark:text-white">Tagum City, Davao del Norte, Philippines</p>
                   </div>
                 </div>
               </div>
@@ -209,28 +210,20 @@ export default function Contact() {
                 </h3>
                 <div className="flex gap-4">
                   <a 
-                    href="#" 
+                    href="https://www.facebook.com/jay288516124" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+                  >
+                    <FacebookIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </a>
+                  <a 
+                    href="https://www.instagram.com/roxinant3/"
+                    target="_blank"
+                    rel="noopener noreferrer" 
                     className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
                   >
                     <InstagramIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </a>
-                  <a 
-                    href="#" 
-                    className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
-                  >
-                    <VimeoIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </a>
-                  <a 
-                    href="#" 
-                    className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
-                  >
-                    <LinkedInIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </a>
-                  <a 
-                    href="#" 
-                    className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
-                  >
-                    <YoutubeIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </a>
                 </div>
               </div>
@@ -239,7 +232,46 @@ export default function Contact() {
 
           {/* Contact Form */}
           <div className="w-full md:w-2/3">
-            <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
+            <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-lg relative">
+              {/* Success Message Overlay */}
+              <AnimatePresence>
+                {isSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="absolute inset-0 flex items-center justify-center bg-white/95 dark:bg-gray-800/95 rounded-2xl z-10"
+                  >
+                    <div className="text-center">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4"
+                      >
+                        <CheckCircleIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
+                      </motion.div>
+                      <motion.h3
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-xl font-semibold text-gray-900 dark:text-white mb-2"
+                      >
+                        Message Sent Successfully!
+                      </motion.h3>
+                      <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-gray-600 dark:text-gray-300"
+                      >
+                        Thank you for reaching out. I'll get back to you soon!
+                      </motion.p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -285,10 +317,38 @@ export default function Contact() {
 
                 <button
                   type="submit"
-                  className="w-full py-4 px-6 bg-purple-600 hover:bg-purple-700 rounded-xl text-white font-medium transition-colors"
+                  disabled={isSubmitting}
+                  className={`w-full py-4 px-6 bg-purple-600 hover:bg-purple-700 rounded-xl text-white font-medium transition-all relative ${
+                    isSubmitting ? 'opacity-80' : ''
+                  }`}
                 >
-                  Send Message
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                      />
+                      <span className="ml-2">Sending...</span>
+                    </div>
+                  ) : (
+                    'Send Message'
+                  )}
                 </button>
+
+                {/* Error Message */}
+                <AnimatePresence>
+                  {errors.message && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-red-500 dark:text-red-400 text-sm mt-2"
+                    >
+                      {errors.message}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </form>
             </div>
           </div>
