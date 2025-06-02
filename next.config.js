@@ -27,7 +27,7 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/videos/:path*',
+        source: '/:path*.mp4',
         headers: [
           {
             key: 'Accept-Ranges',
