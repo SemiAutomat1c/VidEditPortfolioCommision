@@ -35,6 +35,7 @@ export default function VideoPlayer({
   const [showVolumeSlider, setShowVolumeSlider] = useState(false)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadingRef = useRef<boolean>(false)
+  const retryCount = useRef<number>(0)
 
   // Reset state when src changes
   useEffect(() => {
@@ -98,39 +99,131 @@ export default function VideoPlayer({
         video.muted = startMuted
         setIsMuted(startMuted)
 
-        // Ensure the video path is correct
-        const videoPath = src.startsWith('./') ? src.substring(2) : src
+        // Error Recovery 1: Handle spaces in video paths
+        const videoPath = src.startsWith('./') ? 
+          src.substring(2).replace(/ /g, '%20') : 
+          src.replace(/ /g, '%20')
 
-        // Load video first
+        // Error Recovery 2: Validate video path before loading
+        if (!videoPath) {
+          throw new Error('Invalid video path')
+        }
+
+        // Error Recovery 3: Set up timeout for loading
+        const loadTimeout = setTimeout(() => {
+          if (!video.readyState) {
+            throw new Error('Video load timeout')
+          }
+        }, 10000) // 10 second timeout
+
+        // Load video first with error handling
         await new Promise((resolve, reject) => {
-          video.onloadeddata = resolve
-          video.onerror = reject
-          video.src = videoPath
-          video.load()
+          // Error Recovery 4: Multiple event listeners for different error scenarios
+          const handleError = (e: string | Event) => {
+            clearTimeout(loadTimeout)
+            const error = (video.error as MediaError)
+            let errorMessage = 'Failed to load video'
+            
+            if (error) {
+              switch(error.code) {
+                case MediaError.MEDIA_ERR_ABORTED:
+                  errorMessage = 'Video loading aborted'
+                  break
+                case MediaError.MEDIA_ERR_NETWORK:
+                  errorMessage = 'Network error while loading video'
+                  break
+                case MediaError.MEDIA_ERR_DECODE:
+                  errorMessage = 'Video decode error'
+                  break
+                case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                  errorMessage = 'Video format not supported'
+                  break
+              }
+            }
+            
+            reject(new Error(errorMessage))
+          }
+
+          video.onloadeddata = () => {
+            clearTimeout(loadTimeout)
+            resolve(undefined)
+          }
+          
+          video.onerror = handleError
+          video.onabort = handleError
+          video.onstalled = handleError
+
+          // Error Recovery 5: Try both relative and absolute paths
+          try {
+            video.src = videoPath
+            video.load()
+          } catch (e) {
+            handleError(new Event('error'))
+          }
         })
 
         setIsLoaded(true)
         
+        // Error Recovery 6: Progressive playback attempts
         if (priority || document.visibilityState === 'visible') {
           try {
             await video.play()
             setIsPlaying(true)
           } catch (err) {
-            // If autoplay fails, try with muted
-            if (!video.muted) {
-              video.muted = true
-              setIsMuted(true)
-              await video.play()
-              setIsPlaying(true)
-            } else {
-              throw err
+            // Error Recovery 7: Fallback options for playback
+            const fallbackOptions = [
+              async () => {
+                video.muted = true
+                setIsMuted(true)
+                await video.play()
+              },
+              async () => {
+                video.currentTime = 0
+                video.muted = true
+                setIsMuted(true)
+                await video.play()
+              },
+              async () => {
+                video.load()
+                video.muted = true
+                setIsMuted(true)
+                await video.play()
+              }
+            ]
+
+            for (const fallback of fallbackOptions) {
+              try {
+                await fallback()
+                setIsPlaying(true)
+                break
+              } catch (fallbackErr) {
+                continue
+              }
             }
           }
         }
       } catch (err) {
         console.error('Error loading/playing video:', err)
-        setError('Failed to load video')
+        setError(err instanceof Error ? err.message : 'Failed to load video')
         setIsLoaded(false)
+
+        // Error Recovery 8: Automatic retry with backoff
+        if (!retryCount.current) {
+          retryCount.current = 0
+        }
+        
+        if (retryCount.current < 3) {
+          const retryDelay = Math.pow(2, retryCount.current) * 1000
+          retryCount.current++
+          
+          setTimeout(() => {
+            if (videoRef.current) {
+              setError(null)
+              loadingRef.current = false
+              playVideo()
+            }
+          }, retryDelay)
+        }
       } finally {
         loadingRef.current = false
       }
@@ -150,6 +243,7 @@ export default function VideoPlayer({
         setIsPlaying(false)
         setError(null)
         loadingRef.current = false
+        retryCount.current = 0
       }
     }
   }, [src, isVisible, priority, startMuted])

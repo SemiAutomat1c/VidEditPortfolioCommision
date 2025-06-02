@@ -14,7 +14,7 @@ const nextConfig = {
       test: /\.(mp4|webm)$/i,
       type: 'asset/resource',
       generator: {
-        filename: 'static/media/[name][ext]'
+        filename: 'static/videos/[name][ext]'
       }
     })
     return config
@@ -41,8 +41,17 @@ const nextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable'
           }
-        ],
-      },
+        ]
+      }
+    ]
+  },
+  // Configure static file serving
+  async rewrites() {
+    return [
+      {
+        source: '/videos/:path*',
+        destination: '/static/videos/:path*'
+      }
     ]
   }
 }
