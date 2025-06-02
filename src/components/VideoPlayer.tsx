@@ -98,10 +98,14 @@ export default function VideoPlayer({
         video.muted = startMuted
         setIsMuted(startMuted)
 
+        // Ensure the video path is correct
+        const videoPath = src.startsWith('./') ? src.substring(2) : src
+
         // Load video first
         await new Promise((resolve, reject) => {
           video.onloadeddata = resolve
           video.onerror = reject
+          video.src = videoPath
           video.load()
         })
 
