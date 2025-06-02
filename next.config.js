@@ -2,7 +2,9 @@
 const nextConfig = {
   output: 'standalone',
   images: {
-    unoptimized: true,
+    unoptimized: false,
+    domains: [],
+    remotePatterns: [],
   },
   webpack: (config) => {
     config.module.rules.push({
