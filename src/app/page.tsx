@@ -13,7 +13,6 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import BeforeAfterSlider from '@/components/BeforeAfterSlider'
 import ProcessTimeline from '@/components/ProcessTimeline'
 import SocialProof from '@/components/SocialProof'
-import FloatingCTA from '@/components/FloatingCTA'
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false)
@@ -53,7 +52,6 @@ export default function Home() {
         
         {/* Contact Section */}
         <Contact />
-        <FloatingCTA />
       </main>
     </ClientWrapper>
   )
