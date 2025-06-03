@@ -71,19 +71,20 @@ export default function About() {
               About Me
             </h2>
             
-            <div className="space-y-4 text-gray-600 dark:text-gray-300">
-              <p>
-                Hi, I'm Jayrome Pillo, a professional videographer and creative director with over 8 years of experience in visual storytelling. My passion lies in transforming ideas into compelling visual narratives that captivate and inspire audiences.
-              </p>
-              
-              <p>
-                Throughout my career, I've had the privilege of working with diverse clients across various industries, from startups to established brands. My expertise spans commercial production, documentary filmmaking, and creative direction, always focusing on delivering high-quality content that exceeds expectations.
-              </p>
+         <div className="space-y-4 text-gray-600 dark:text-gray-300">
+  <p>
+    Hi, I'm Jayrome Pillo, a computer science student with a passion for video editing. I have been honing my skills in visual storytelling while pursuing my degree, and I enjoy using my creativity to produce engaging content.
+  </p>
+  
+  <p>
+    As a student, I have worked on various projects that allow me to combine my technical knowledge with my love for editing. I take pride in delivering high-quality videos that resonate with viewers, whether it's for personal projects, collaborations, or freelance work.
+  </p>
 
-              <p>
-                What sets me apart is my commitment to understanding each client's unique vision and translating it into visually stunning content. I believe in the power of storytelling through video and its ability to create meaningful connections with audiences.
-              </p>
-            </div>
+  <p>
+    What sets me apart is my dedication to understanding the unique needs of each project and my ability to adapt my editing style to fit different themes and audiences. I believe in the power of video to communicate ideas effectively and create lasting impressions.
+  </p>
+</div>
+
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8">
